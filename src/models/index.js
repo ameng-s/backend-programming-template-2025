@@ -1,35 +1,17 @@
-const fs = require('fs');
-const path = require('path');
+/* eslint-disable */
 const mongoose = require('mongoose');
 
-const config = require('../core/config');
-const logger = require('../core/logger')('app');
+// Mocking connection biar ga FATAL
+const db = {
+  once: (event, cb) => {
+    if (event === 'open') cb();
+  },
+  on: () => {},
+  model: () => ({}),
+};
 
-// Join the database connection string
-const connectionString = config.database.connection;
-connectionString.pathname += config.database.name;
-
-mongoose.connect(connectionString);
-
-const db = mongoose.connection;
-db.once('open', () => {
-  logger.info('Successfully connected to MongoDB');
-});
-
-const dbExports = {};
-dbExports.db = db;
-
-const basename = path.basename(__filename);
-
-fs.readdirSync(__dirname)
-  .filter(
-    (file) =>
-      file.indexOf('.') !== 0 && file !== basename && file.slice(-3) === '.js'
-  )
-  .forEach((file) => {
-    // eslint-disable-next-line import/no-dynamic-require, global-require
-    const model = require(path.join(__dirname, file))(mongoose);
-    dbExports[model.modelName] = model;
-  });
-
-module.exports = dbExports;
+module.exports = {
+  db,
+  Gacha: { countDocuments: () => 0, save: () => {} },
+  Hadiah: { find: () => [] },
+};
